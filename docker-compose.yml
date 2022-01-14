@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+    mlflow-db:
+        restart: unless-stopped
+        image: postgres:9.6.24
+        container_name: mlflow-db
+        expose:
+            - "5432"
+#        ports:
+#            - "5432:5432"
+        networks:
+            - backend
+        volumes:
+            - ./db_data:/var/lib/postgresql/data
+            - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+        environment:
+            - POSTGRES_PASSWORD
+            - POSTGRES_MLFLOW_USER
+            - POSTGRES_MLFLOW_PASSWORD
+            - POSTGRES_MLFLOW_DB
+
+    mlflow-server:
+        restart: unless-stopped
+        build: ./mlflow
+        image: mlflow-server
+        container_name: mlflow-server
+        ports:
+            - "5000:5000"
+        networks:
+            - backend
+        command: mlflow server --backend-store-uri postgresql+psycopg2://${POSTGRES_MLFLOW_USER}:${POSTGRES_MLFLOW_PASSWORD}@mlflow-db:5432/${POSTGRES_MLFLOW_DB} --default-artifact-root ./mlruns --host 0.0.0.0 --port 5000
+        depends_on:
+            - mlflow-db
+
+networks:
+    backend:
+        driver: bridge
