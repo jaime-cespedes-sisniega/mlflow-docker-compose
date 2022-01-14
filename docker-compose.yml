@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+    mlflow-nginx:
+        restart: unless-stopped
+        image: nginx:1.21.5
+        container_name: mlflow-nginx
+        ports:
+            - "80:80"
+            #- "443:443"
+        networks:
+            - frontend
+        volumes:
+            - /home/jaime/test_pass:/etc/nginx/passwords
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        depends_on:
+            - mlflow-server
+
     mlflow-db:
         restart: unless-stopped
         image: postgres:9.6.24
@@ -25,14 +40,17 @@ services:
         build: ./mlflow
         image: mlflow-server
         container_name: mlflow-server
-        ports:
-            - "5000:5000"
+        expose:
+            - "5000"
         networks:
+            - frontend
             - backend
         command: mlflow server --backend-store-uri postgresql+psycopg2://${POSTGRES_MLFLOW_USER}:${POSTGRES_MLFLOW_PASSWORD}@mlflow-db:5432/${POSTGRES_MLFLOW_DB} --default-artifact-root ./mlruns --host 0.0.0.0 --port 5000
         depends_on:
             - mlflow-db
 
 networks:
+    frontend:
+        driver: bridge
     backend:
         driver: bridge
