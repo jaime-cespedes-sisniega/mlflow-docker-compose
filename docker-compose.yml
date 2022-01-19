@@ -7,14 +7,22 @@ services:
         container_name: mlflow-nginx
         ports:
             - "80:80"
-            #- "443:443"
+            - "443:443"
         networks:
             - frontend
         volumes:
             - /home/jaime/test_pass:/etc/nginx/passwords
             - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./certbot/www:/var/www/certbot/:ro
+            - ./certbot/conf/:/etc/nginx/ssl/:ro
         depends_on:
             - mlflow-server
+
+    certbot:
+        image: certbot/certbot:v1.22.0
+        volumes:
+            - ./certbot/conf:/etc/letsencrypt:rw
+            - ./certbot/www:/var/www/certbot/:rw
 
     mlflow-db:
         restart: unless-stopped
@@ -22,8 +30,6 @@ services:
         container_name: mlflow-db
         expose:
             - "5432"
-#        ports:
-#            - "5432:5432"
         networks:
             - backend
         volumes:
@@ -45,6 +51,8 @@ services:
         networks:
             - frontend
             - backend
+        volumes:
+            - /home/jaime/.config/JetBrains/PyCharm2021.3/scratches//mlruns:/mlruns
         command: mlflow server --backend-store-uri postgresql+psycopg2://${POSTGRES_MLFLOW_USER}:${POSTGRES_MLFLOW_PASSWORD}@mlflow-db:5432/${POSTGRES_MLFLOW_DB} --default-artifact-root ./mlruns --host 0.0.0.0 --port 5000
         depends_on:
             - mlflow-db
