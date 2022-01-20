@@ -35,7 +35,6 @@ services:
     mlflow-server:
         restart: unless-stopped
         build: ./mlflow
-        image: mlflow-server
         container_name: mlflow-server
         expose:
             - "5000"
