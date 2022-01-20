@@ -33,7 +33,9 @@ os.environ['MLFLOW_TRACKING_PASSWORD'] = <PASSWORD_UNENCRYPTED>
 More information about authentication can be found in the MLflow´s documentation [Logging to a Tracking Server](https://mlflow.org/docs/latest/tracking.html#logging-to-a-tracking-server).
 
 
-Finally, you can run docker compose services.
+Docker compose services can be executed with the following command.
 ```bash
 docker-compose up -d
 ```
+
+Finally, you can access and login to the MLflow server through [http://127.0.0.1](http://127.0.0.1).
