@@ -24,8 +24,8 @@ services:
         networks:
             - backend
         volumes:
-            - ./db_data:/var/lib/postgresql/data
-            - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+            - ./postgresql/db_data:/var/lib/postgresql/data
+            - ./postgresql/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh
         environment:
             - POSTGRES_PASSWORD
             - POSTGRES_MLFLOW_USER
