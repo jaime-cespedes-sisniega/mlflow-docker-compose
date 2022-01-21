@@ -42,6 +42,8 @@ services:
             - frontend
             - backend
         volumes:
+            # FIXME: Workaround to use host private ssh keys inside the container.
+            # This should be able to be done using ssh-agent and SSH_AUTH_SOCK env variable, but it doesn't work.
             - ~/.ssh/id_rsa:/root/.ssh/id_rsa:ro
         command: bash -c "
             ssh-keyscan -H $MLFLOW_SFTP_HOST >> ~/.ssh/known_hosts
