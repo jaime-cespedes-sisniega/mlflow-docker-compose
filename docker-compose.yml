@@ -42,12 +42,32 @@ services:
         networks:
             - frontend
             - backend
+            - artifacts-storage
         volumes:
             - ./minio/data:/data
         environment:
             - MINIO_ROOT_USER
             - MINIO_ROOT_PASSWORD
         command: server /data --console-address ":9001"
+
+    mlflow-artifacts-storage-client:
+        restart: "no"
+        image: minio/mc:RELEASE.2022-01-07T06-01-38Z
+        container_name: mlflow-artifacts-storage-client
+        networks:
+            - artifacts-storage
+        entrypoint: >
+            /bin/sh -c "
+            until (/usr/bin/mc config host add admin http://mlflow-artifacts-storage:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}) do echo '...waiting...' && sleep 1; done;
+            /usr/bin/mc admin user add admin ${MINIO_MLFLOW_USER} ${MINIO_MLFLOW_PASSWORD};
+            /usr/bin/mc admin policy set admin readwrite user=${MINIO_MLFLOW_USER};
+            /usr/bin/mc config host remove admin;
+            /usr/bin/mc config host add mlflow http://mlflow-artifacts-storage:9000 ${MINIO_MLFLOW_USER} ${MINIO_MLFLOW_PASSWORD};
+            /usr/bin/mc mb --ignore-existing mlflow/${MINIO_MLFLOW_ARTIFACTS_BUCKET};
+            exit 0;
+            "
+        depends_on:
+            - mlflow-artifacts-storage
 
     mlflow-server:
         restart: unless-stopped
@@ -60,9 +80,9 @@ services:
             - backend
         environment:
             - MLFLOW_S3_ENDPOINT_URL=http://mlflow-artifacts-storage:9000
-            - AWS_ACCESS_KEY_ID
-            - AWS_SECRET_ACCESS_KEY
-        command: mlflow server --backend-store-uri postgresql+psycopg2://${POSTGRES_MLFLOW_USER}:${POSTGRES_MLFLOW_PASSWORD}@mlflow-metada-db:5432/${POSTGRES_MLFLOW_DB} --default-artifact-root ${MLFLOW_ARTIFACTS_PATH} --host 0.0.0.0 --port 5000
+            - AWS_ACCESS_KEY_ID=${MINIO_MLFLOW_USER}
+            - AWS_SECRET_ACCESS_KEY=${MINIO_MLFLOW_PASSWORD}
+        command: mlflow server --backend-store-uri postgresql+psycopg2://${POSTGRES_MLFLOW_USER}:${POSTGRES_MLFLOW_PASSWORD}@mlflow-metada-db:5432/${POSTGRES_MLFLOW_DB} --default-artifact-root s3://${MINIO_MLFLOW_ARTIFACTS_BUCKET} --host 0.0.0.0 --port 5000
         depends_on:
             - mlflow-metada-db
             - mlflow-artifacts-storage
@@ -71,4 +91,6 @@ networks:
     frontend:
         driver: bridge
     backend:
+        driver: bridge
+    artifacts-storage:
         driver: bridge
