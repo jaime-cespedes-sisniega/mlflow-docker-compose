@@ -3,3 +3,7 @@
 
 # Pycharm folder
 .idea
+
+# Certificates and Certificates keys
+*.crt
+*.key
