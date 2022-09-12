@@ -6,4 +6,5 @@ ENV BOTO3_VERSION 1.20.41
 
 RUN pip install --no-cache-dir mlflow==${MLFLOW_VERSION} \
                                psycopg2-binary==${PSYCOPG_VERSION} \
-                               boto3==${BOTO3_VERSION}
+                               boto3==${BOTO3_VERSION} \
+                               protobuf==3.20.1
