@@ -4,9 +4,9 @@ This repository aims to use a MLflow server for experiment tracking or as a mode
 ## Requirements
 
 The following docker compose repository has been tested using:
-* [Docker Engine 20.10.12](https://docs.docker.com/engine/release-notes/#201012)
-* [Docker Compose 1.29.2](https://docs.docker.com/compose/release-notes/#1292)
-* Ubuntu 20.04.3 LTS
+* [Docker Engine 20.10.18](https://docs.docker.com/engine/release-notes/#version-2010)
+* [Docker Compose v2.10.2](https://docs.docker.com/compose/release-notes/#2102)
+* Ubuntu 20.04.5 LTS
 
 ## Setup
 
@@ -40,7 +40,7 @@ More information about authentication can be found in the MLflow´s documentatio
 
 Docker compose services can be executed with the following command.
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Finally, you can access and login to the MLflow server through [http://127.0.0.1](http://127.0.0.1) and also access MinIO server through [http://127.0.0.1:9000](http://127.0.0.1:9000) 
